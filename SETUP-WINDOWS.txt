@@ -1,0 +1,83 @@
+JOSE PHD'S - WINDOWS SETUP
+==========================
+
+1. EXTRACT
+   Right-click the zip > Extract All.
+   You may end up with jose-phds\jose-phds. Keep opening folders until you
+   see package.json sitting next to the "app" and "lib" folders.
+
+2. OPEN A TERMINAL IN THAT FOLDER
+   In File Explorer, click the address bar, type  cmd  and press Enter.
+   Confirm you are in the right place:
+
+       dir package.json
+
+   If it says "File Not Found", you are one folder too high or too low.
+
+3. INSTALL
+       npm install
+
+   Requires Node.js 20 or newer. Check with:  node --version
+   Download from nodejs.org if needed.
+
+4. CREATE YOUR ENV FILE
+       copy ENV-TEMPLATE.txt .env.local
+       notepad .env.local
+
+   Fill in each value, save, close.
+   .env.local is already excluded from git. Never commit it.
+
+5. DATABASE
+       npx prisma db push
+
+6. RUN
+       npm run dev
+
+   Open http://localhost:3000
+
+TROUBLESHOOTING
+---------------
+"ENOENT package.json"      You are not in the project folder. See step 2.
+"GEMINI_API_KEY is not set" .env.local missing or the key line is blank.
+                            That error on startup is intentional.
+"npm is not recognized"     Install Node.js, then reopen the terminal.
+
+WHERE THE KEYS COME FROM
+------------------------
+GEMINI_API_KEY      aistudio.google.com
+PINECONE_API_KEY    app.pinecone.io  (index: 768 dimensions, cosine metric)
+DATABASE_URL        neon.tech or supabase.com (free Postgres)
+CLERK keys          dashboard.clerk.com
+BLOB token          vercel blob store add
+
+DEPENDENCY NOTES (updated)
+--------------------------
+Do NOT run npm install with --legacy-peer-deps or --force on this project.
+The version floors are deliberate:
+
+  next        ^15.5.0   Clerk requires >=15.2.3, which patched a middleware
+                        auth-bypass. Middleware is what protects your routes.
+  react       ^19.1.0   Clerk excludes exactly 19.0.0.
+  @vercel/blob ^2.6.1   Earlier versions pull a vulnerable undici.
+
+npm audit will report ~5 moderate transitive advisories with no upstream fix
+available. Those are expected and are not blockers.
+
+CHECKING YOUR KEYS
+------------------
+If scripts\check-keys.mjs is missing, create it from CHECK-KEYS.txt:
+
+    mkdir scripts
+    copy CHECK-KEYS.txt scripts\check-keys.mjs
+
+Then run:
+
+    npm run check
+
+Each service reports OK, FAIL, or SKIP. Rerun after editing .env.local;
+no restart needed.
+
+AFTER UPDATING (schema changed)
+-------------------------------
+    npx prisma generate
+    npx prisma db push

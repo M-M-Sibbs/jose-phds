@@ -1,0 +1,8 @@
+# NEVER commit real values. Set these in Vercel > Settings > Environment Variables.
+GEMINI_API_KEY=
+PINECONE_API_KEY=
+PINECONE_INDEX=jose-phds
+DATABASE_URL=
+BLOB_READ_WRITE_TOKEN=
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=

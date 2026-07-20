@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id           String     @id @default(cuid())
+  userId       String
+  title        String
+  topic        String     @db.Text
+  objectives   String     @db.Text
+  questions    String     @db.Text
+  styleProfile Json?
+  // Research output is cached so each generation step can resume without
+  // re-running the expensive retrieval and search phase.
+  researchCache Json?
+  // Requirements extracted from supervisor guidance or a department handbook.
+  structureSpec Json?
+  status       String     @default("draft")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  documents    Document[]
+  chapters     Chapter[]
+  references   Reference[]
+  logs         ResearchLog[]
+
+  @@index([userId])
+}
+
+model Document {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  filename   String
+  blobUrl    String
+  kind       String   // "sample" | "knowledge"
+  chunkCount Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([projectId])
+}
+
+model Chapter {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  order      Int
+  title      String
+  draft      String?  @db.Text
+  humanized  String?  @db.Text
+  summary    String?  @db.Text
+  critique   Json?
+  updatedAt  DateTime @updatedAt
+
+  @@unique([projectId, order])
+}
+
+model Reference {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  handle    String
+  authors   String?
+  year      String?
+  title     String  @db.Text
+  // Journal, publisher, or site name. Used by the bibliography formatter.
+  container String?
+  uri       String?
+  origin    String
+  verified  Boolean @default(false)
+
+  @@index([projectId])
+}
+
+model ResearchLog {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage     String
+  detail    String?  @db.Text
+  tokens    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+}

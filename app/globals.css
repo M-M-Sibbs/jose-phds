@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Palette: a supervisor's marked-up manuscript.
+  Warm paper, oxidised iron-gall ink, and a single red pencil for the one thing
+  that matters most in this product — an unverified citation.
+*/
+:root {
+  --paper:      #F7F4EC;
+  --paper-deep: #EDE7DA;
+  --ink:        #1B1F24;
+  --ink-soft:   #4A5158;
+  --rule:       #CFC7B4;
+  --iron:       #2E4A62;   /* structural accent: stages, links, active state */
+  --pencil:     #A8323A;   /* reserved exclusively for verification warnings */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #16191D;
+    --paper-deep: #1E2227;
+    --ink:        #E8E4DA;
+    --ink-soft:   #9AA1A9;
+    --rule:       #343A41;
+    --iron:       #7FA9C9;
+    --pencil:     #D9737B;
+  }
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.display {
+  font-family: "Zilla Slab", ui-serif, Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Signature element: the pipeline rule.
+   Stages hang off a single vertical line the way marginalia hang off a page
+   edge. The line fills as work completes, so progress is one continuous
+   gesture rather than eight separate spinners. */
+.pipeline { position: relative; padding-left: 2.25rem; }
+.pipeline::before {
+  content: "";
+  position: absolute;
+  left: 0.6875rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background: var(--rule);
+}
+.pipeline-fill {
+  position: absolute;
+  left: 0.6875rem;
+  top: 0.5rem;
+  width: 1px;
+  background: var(--iron);
+  transition: height 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stage-node {
+  position: absolute;
+  left: 0.3125rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+}
+.stage-node[data-state="active"] {
+  border-color: var(--iron);
+  background: var(--iron);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.stage-node[data-state="done"] { border-color: var(--iron); background: var(--iron); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--iron) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--iron) 0%, transparent); }
+}
+
+:focus-visible {
+  outline: 2px solid var(--iron);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
