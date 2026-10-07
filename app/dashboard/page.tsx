@@ -146,8 +146,9 @@ export default function Dashboard() {
 
       let res: Response;
       try {
-        res = await fetch("/api/generate", {
+      res = await fetch("/api/generate", {
           method: "POST",
+          cache: "no-store",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ projectId: project.id, step }),
         });

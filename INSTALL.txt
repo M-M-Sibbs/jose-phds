@@ -1,0 +1,76 @@
+JOSE PHD'S — NEW FEATURES INSTALL
+=================================
+All files are drop-in. Copy each to the matching path in C:\dev\jose-phds-clean,
+then: npm run build  ->  git add -A  ->  git commit  ->  git push (Vercel auto-deploys).
+
+
+1. FIX THE BUILD FIRST (this is why the clean clone won't compile)
+------------------------------------------------------------------
+  lib\rag\store.ts   ->  REPLACE your file with this one.
+
+It makes the Pinecone client lazy, so `next build` no longer needs the key at
+build time. This clears the "Failed to collect page data for /api/projects"
+error you're stuck on.
+
+After copying it, if /api/projects\route.ts (or any route) still constructs
+Pinecone at the top of the file, that import is now harmless because the client
+is only built on first real use.
+
+
+2. AUTO-RESUME
+--------------
+  app\api\resume\route.ts     ->  NEW file (create the folder app\api\resume\)
+  components\ResumeAll.tsx     ->  NEW file
+  vercel.json                  ->  NEW file at project root (enables the cron)
+
+Mount the panel in app\dashboard\page.tsx. Add the import near the top:
+
+    import { ResumeAll } from "@/components/ResumeAll";
+
+Then place it just inside the main return, above your existing sections:
+
+    <ResumeAll onResume={(projectId, step) => runPipeline(step)} />
+
+`runPipeline` is your existing generate-stepping function. If it is named
+differently, pass whatever function drives /api/generate.
+
+The cron in vercel.json fires /api/resume daily at 08:05 UTC (just after the
+Gemini quota resets at midnight Pacific). Cron requires a Vercel plan that
+includes Cron Jobs; until then the ResumeAll button is the manual trigger and
+works on any plan.
+
+
+3. REVISION CHAT
+----------------
+  app\api\revise\route.ts     ->  NEW file (create the folder app\api\revise\)
+  components\ReviseChat.tsx    ->  NEW file
+
+Mount it under each generated chapter in app\dashboard\page.tsx. Add the import:
+
+    import { ReviseChat } from "@/components/ReviseChat";
+
+Where you render each chapter body, add the panel. If your chapter loop looks
+like `chapters.map((c, i) => ...)`, add inside it after the body:
+
+    <ReviseChat
+      projectId={project.id}
+      chapterOrder={i}
+      chapterTitle={c.title}
+      onRevised={(body) => {
+        setChapters((prev) =>
+          prev.map((ch, j) => (j === i ? { ...ch, body } : ch))
+        );
+      }}
+    />
+
+Adjust `setChapters` / field names to match your state. The key inputs are
+projectId and the chapter's order (its index).
+
+
+QUOTA NOTE
+----------
+Both features spend Gemini requests, and the free tier is 20/day. Auto-resume
+is built to live WITHIN that cap (it continues one step at a time). Revision
+chat spends ~1-2 requests per edit, so a handful of edits per day on free tier.
+Each shows a clear "quota exhausted" message when it hits the wall. Enabling
+billing on the Gemini key removes the cap.

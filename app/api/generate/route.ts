@@ -21,6 +21,8 @@ import { resolveOutline, type StructureSpec } from "@/lib/rag/structure";
  * The client calls this repeatedly, following the `next` field until it is null.
  */
 export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 type Step =
   | { kind: "research" }
