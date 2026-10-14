@@ -2,11 +2,10 @@
   "name": "jose-phds",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
+    "scripts": {
     "start": "next start -p $PORT",
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start",
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
